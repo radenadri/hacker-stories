@@ -2,19 +2,19 @@ import { useState } from "react";
 
 import "./styles.css";
 
-const Search = ({ onSearch }) => {
+const Search = ({ search, onSearch }) => {
   return (
     <div>
       <label htmlFor="search">Search :</label>
-      <input id="search" type="text" onChange={onSearch} />
+      <input id="search" type="text" value={search} onChange={onSearch} />
     </div>
   );
 };
 
 const List = ({ stories }) => (
   <ul>
-    {stories.map((item) => (
-      <Item key={item.objectID} {...item} />
+    {stories.map(({ objectID, ...item }) => (
+      <Item key={objectID} {...item} />
     ))}
   </ul>
 );
@@ -64,7 +64,7 @@ const App = () => {
     <div>
       <h1>My Hacker Stories</h1>
 
-      <Search onSearch={handleSearch} />
+      <Search search={searchTerm} onSearch={handleSearch} />
 
       <hr />
 
