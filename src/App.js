@@ -109,18 +109,25 @@ const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useSemiPersistenState("search", "");
+  const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
   const [stories, dispatchStories] = useReducer(storiesReducer, {
     data: [],
     isLoading: false,
     isError: false
   });
 
-  const handleFetchStories = useCallback(() => {
-    if (!searchTerm) return;
+  const handleSearchInput = (event) => {
+    setSearchTerm(event.target.value);
+  };
 
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
+  };
+
+  const handleFetchStories = useCallback(() => {
     dispatchStories({ type: "STORIES_FETCH_INIT" });
 
-    fetch(`${API_ENDPOINT}${searchTerm}`)
+    fetch(url)
       .then((response) => response.json())
       .then((result) => {
         dispatchStories({
@@ -133,7 +140,7 @@ const App = () => {
           type: "STORIES_FETCH_FAILURE"
         });
       });
-  }, [searchTerm]);
+  }, [url]);
 
   useEffect(() => {
     handleFetchStories();
@@ -146,10 +153,6 @@ const App = () => {
     });
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
   return (
     <div>
       <h1>My Hacker Stories</h1>
@@ -158,10 +161,14 @@ const App = () => {
         id="search"
         label="Search"
         value={searchTerm}
-        onInputChange={handleSearch}
+        onInputChange={handleSearchInput}
       >
         <strong>Search :</strong>
       </InputWithLabel>
+
+      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>
+        Submit
+      </button>
 
       <hr />
 
