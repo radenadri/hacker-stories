@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import axios from "axios";
 
-import "./styles.css";
+import "./App.css";
 
 const InputWithLabel = ({
   id,
@@ -21,7 +21,9 @@ const InputWithLabel = ({
 
   return (
     <>
-      <label htmlFor={id}>{children}</label>
+      <label htmlFor={id} className="label">
+        {children}
+      </label>
       &nbsp;
       <input
         ref={inputRef}
@@ -30,6 +32,7 @@ const InputWithLabel = ({
         value={value}
         autoFocus={isFocused}
         onChange={onInputChange}
+        className="input"
       />
     </>
   );
@@ -47,15 +50,19 @@ const Item = ({ item, onRemoveItem }) => {
   const { url, title, author, num_comments, points } = item;
 
   return (
-    <li>
-      <span>
+    <li className="item">
+      <span style={{ width: "40%" }}>
         <a href={url}>{title}</a>
       </span>
-      <span>{author}</span>
-      <span>{num_comments}</span>
-      <span>{points}</span>
-      <span>
-        <button type="button" onClick={() => onRemoveItem(item)}>
+      <span style={{ width: "30%" }}>{author}</span>
+      <span style={{ width: "10%" }}>{num_comments}</span>
+      <span style={{ width: "10%" }}>{points}</span>
+      <span style={{ width: "10%" }}>
+        <button
+          className="button button_small"
+          type="button"
+          onClick={() => onRemoveItem(item)}
+        >
           Dismiss
         </button>
       </span>
@@ -171,8 +178,8 @@ const App = () => {
   };
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
+    <div className="container">
+      <h1 className="headline-primary">My Hacker Stories</h1>
 
       <SearchForm
         searchTerm={searchTerm}
