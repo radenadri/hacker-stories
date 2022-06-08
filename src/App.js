@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import axios from "axios";
 
-import "./App.css";
+import styles from "./App.module.css";
 
 const InputWithLabel = ({
   id,
@@ -21,7 +21,7 @@ const InputWithLabel = ({
 
   return (
     <>
-      <label htmlFor={id} className="label">
+      <label htmlFor={id} className={styles.label}>
         {children}
       </label>
       &nbsp;
@@ -32,7 +32,7 @@ const InputWithLabel = ({
         value={value}
         autoFocus={isFocused}
         onChange={onInputChange}
-        className="input"
+        className={styles.input}
       />
     </>
   );
@@ -50,7 +50,7 @@ const Item = ({ item, onRemoveItem }) => {
   const { url, title, author, num_comments, points } = item;
 
   return (
-    <li className="item">
+    <li className={styles.item}>
       <span style={{ width: "40%" }}>
         <a href={url}>{title}</a>
       </span>
@@ -59,7 +59,7 @@ const Item = ({ item, onRemoveItem }) => {
       <span style={{ width: "10%" }}>{points}</span>
       <span style={{ width: "10%" }}>
         <button
-          className="button button_small"
+          className={`${styles.button} ${styles.buttonSmall}`}
           type="button"
           onClick={() => onRemoveItem(item)}
         >
@@ -71,7 +71,7 @@ const Item = ({ item, onRemoveItem }) => {
 };
 
 const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
-  <form onSubmit={onSearchSubmit}>
+  <form onSubmit={onSearchSubmit} className={styles.searchForm}>
     <InputWithLabel
       id="search"
       label="Search"
@@ -81,7 +81,11 @@ const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
       <strong>Search :</strong>
     </InputWithLabel>
 
-    <button type="submit" disabled={!searchTerm}>
+    <button
+      className={`${styles.button} ${styles.buttonLarge}`}
+      type="submit"
+      disabled={!searchTerm}
+    >
       Submit
     </button>
   </form>
@@ -178,8 +182,8 @@ const App = () => {
   };
 
   return (
-    <div className="container">
-      <h1 className="headline-primary">My Hacker Stories</h1>
+    <div className={styles.container}>
+      <h1 className={styles.headlinePrimary}>My Hacker Stories</h1>
 
       <SearchForm
         searchTerm={searchTerm}
