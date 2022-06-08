@@ -12,7 +12,6 @@ import styled from "styled-components";
 import { ReactComponent as Check } from "./check.svg";
 
 const StyledContainer = styled.div`
-  height: 100vw;
   padding: 20px;
   background: #83a4d4;
   background: linear-gradient(to left, #b6fbff, #83a4d4);
@@ -85,6 +84,64 @@ const StyledColumn = styled.span`
   }
   width: ${(props) => props.width};
 `;
+
+const useSemiPersistenState = (key, initialState) => {
+  const isMounted = useRef(false);
+
+  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
+
+  useEffect(() => {
+    if (isMounted) {
+      isMounted.current = true;
+    } else {
+      console.log("A");
+      localStorage.setItem(key, value);
+    }
+  }, [value, key]);
+
+  return [value, setValue];
+};
+
+const storiesReducer = (state, action) => {
+  switch (action.type) {
+    case "STORIES_FETCH_INIT":
+      return {
+        ...state,
+        isLoading: true,
+        isError: false
+      };
+    case "STORIES_FETCH_SUCCESS":
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        data: action.payload
+      };
+    case "STORIES_FETCH_FAILURE":
+      return {
+        ...state,
+        isLoading: false,
+        isError: true
+      };
+    case "REMOVE_STORY":
+      return {
+        ...state,
+        data: state.data.filter(
+          (story) => action.payload.objectID !== story.objectID
+        )
+      };
+    default:
+      throw new Error();
+  }
+};
+
+const getSumComments = (stories) => {
+  console.log("C: GetSumComments");
+
+  return stories.data.reduce((result, value) => result + value.num_comments, 0);
+};
+
+const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 const InputWithLabel = ({
   id,
@@ -166,63 +223,6 @@ const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
   </StyledSearchForm>
 );
 
-const useSemiPersistenState = (key, initialState) => {
-  const isMounted = useRef(false);
-
-  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
-
-  useEffect(() => {
-    if (isMounted) {
-      isMounted.current = true;
-    } else {
-      console.log("A");
-      localStorage.setItem(key, value);
-    }
-  }, [value, key]);
-
-  return [value, setValue];
-};
-
-const storiesReducer = (state, action) => {
-  switch (action.type) {
-    case "STORIES_FETCH_INIT":
-      return {
-        ...state,
-        isLoading: true,
-        isError: false
-      };
-    case "STORIES_FETCH_SUCCESS":
-      return {
-        ...state,
-        isLoading: false,
-        isError: false,
-        data: action.payload
-      };
-    case "STORIES_FETCH_FAILURE":
-      return {
-        ...state,
-        isLoading: false,
-        isError: true
-      };
-    case "REMOVE_STORY":
-      return {
-        ...state,
-        data: state.data.filter(
-          (story) => action.payload.objectID !== story.objectID
-        )
-      };
-    default:
-      throw new Error();
-  }
-};
-
-const getSumComments = (stories) => {
-  console.log("C: GetSumComments");
-
-  return stories.data.reduce((result, value) => result + value.num_comments, 0);
-};
-
-const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 const App = () => {
   const [searchTerm, setSearchTerm] = useSemiPersistenState("search", "");
   const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
