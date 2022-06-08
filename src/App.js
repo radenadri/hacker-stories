@@ -1,7 +1,27 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState
+} from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { ReactComponent as Check } from "./check.svg";
+
+const StyledContainer = styled.div`
+  height: 100vw;
+  padding: 20px;
+  background: #83a4d4;
+  background: linear-gradient(to left, #b6fbff, #83a4d4);
+  color: #171212;
+`;
+const StyledHeadlinePrimary = styled.h1`
+  font-size: 48px;
+  font-weight: 300;
+  letter-spacing: 2px;
+`;
 
 const StyledButton = styled.button`
   background: transparent;
@@ -33,6 +53,38 @@ const StyledSearchForm = styled.form`
   align-items: baseline;
 `;
 
+const StyledLabel = styled.label`
+  border-top: 1px solid #171212;
+  border-left: 1px solid #171212;
+  padding-left: 5px;
+  font-size: 24px;
+`;
+
+const StyledInput = styled.input`
+  border: none;
+  border-bottom: 1px solid #171212;
+  background-color: transparent;
+  font-size: 24px;
+`;
+
+const StyledItem = styled.li`
+  display: flex;
+  align-items: center;
+  padding-bottom: 5px;
+`;
+
+const StyledColumn = styled.span`
+  padding: 0 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  a {
+    color: inherit;
+  }
+  width: ${(props) => props.width};
+`;
+
 const InputWithLabel = ({
   id,
   value,
@@ -48,20 +100,6 @@ const InputWithLabel = ({
       inputRef.current.focus();
     }
   }, [isFocused]);
-
-  const StyledLabel = styled.label`
-    border-top: 1px solid #171212;
-    border-left: 1px solid #171212;
-    padding-left: 5px;
-    font-size: 24px;
-  `;
-
-  const StyledInput = styled.input`
-    border: none;
-    border-bottom: 1px solid #171212;
-    background-color: transparent;
-    font-size: 24px;
-  `;
 
   return (
     <>
@@ -79,34 +117,19 @@ const InputWithLabel = ({
   );
 };
 
-const List = ({ list, onRemoveItem }) => (
-  <ul>
-    {list.map((item) => (
-      <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
-    ))}
-  </ul>
+const List = memo(
+  ({ list, onRemoveItem }) =>
+    console.log("B:List") || (
+      <ul>
+        {list.map((item) => (
+          <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+        ))}
+      </ul>
+    )
 );
 
 const Item = ({ item, onRemoveItem }) => {
   const { url, title, author, num_comments, points } = item;
-
-  const StyledItem = styled.li`
-    display: flex;
-    align-items: center;
-    padding-bottom: 5px;
-  `;
-
-  const StyledColumn = styled.span`
-    padding: 0 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    a {
-      color: inherit;
-    }
-    width: ${(props) => props.width};
-  `;
 
   return (
     <StyledItem>
@@ -143,10 +166,17 @@ const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
 );
 
 const useSemiPersistenState = (key, initialState) => {
+  const isMounted = useRef(false);
+
   const [value, setValue] = useState(localStorage.getItem(key) || initialState);
 
   useEffect(() => {
-    localStorage.setItem(key, value);
+    if (isMounted) {
+      isMounted.current = true;
+    } else {
+      console.log("A");
+      localStorage.setItem(key, value);
+    }
   }, [value, key]);
 
   return [value, setValue];
@@ -224,25 +254,12 @@ const App = () => {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = (item) => {
+  const handleRemoveStory = useCallback((item) => {
     dispatchStories({
       type: "REMOVE_STORY",
       payload: item
     });
-  };
-
-  const StyledContainer = styled.div`
-    height: 100vw;
-    padding: 20px;
-    background: #83a4d4;
-    background: linear-gradient(to left, #b6fbff, #83a4d4);
-    color: #171212;
-  `;
-  const StyledHeadlinePrimary = styled.h1`
-    font-size: 48px;
-    font-weight: 300;
-    letter-spacing: 2px;
-  `;
+  }, []);
 
   return (
     <StyledContainer>
