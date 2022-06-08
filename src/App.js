@@ -2,6 +2,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
   useState
@@ -215,6 +216,12 @@ const storiesReducer = (state, action) => {
   }
 };
 
+const getSumComments = (stories) => {
+  console.log("C: GetSumComments");
+
+  return stories.data.reduce((result, value) => result + value.num_comments, 0);
+};
+
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 const App = () => {
   const [searchTerm, setSearchTerm] = useSemiPersistenState("search", "");
@@ -261,9 +268,13 @@ const App = () => {
     });
   }, []);
 
+  const sumComments = useMemo(() => getSumComments(stories), [stories]);
+
   return (
     <StyledContainer>
-      <StyledHeadlinePrimary>My Hacker Stories</StyledHeadlinePrimary>
+      <StyledHeadlinePrimary>
+        My Hacker Stories with {sumComments} comments.
+      </StyledHeadlinePrimary>
 
       <SearchForm
         searchTerm={searchTerm}
