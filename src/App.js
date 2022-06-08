@@ -50,13 +50,19 @@ const App = () => {
     }
   ];
 
-  const [searchTerm, setSearchTerm] = useState(
-    localStorage.getItem("search") || ""
-  );
+  const useSemiPersistenState = (key, initialState) => {
+    const [value, setValue] = useState(
+      localStorage.getItem(key) || initialState
+    );
 
-  useEffect(() => {
-    localStorage.setItem("search", searchTerm);
-  }, [searchTerm]);
+    useEffect(() => {
+      localStorage.setItem(key, value);
+    }, [value, key]);
+
+    return [value, setValue];
+  };
+
+  const [searchTerm, setSearchTerm] = useSemiPersistenState("search", "");
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
