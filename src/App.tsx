@@ -1,4 +1,4 @@
-import {
+import React, {
   memo,
   useCallback,
   useEffect,
@@ -85,7 +85,76 @@ const StyledColumn = styled.span`
   width: ${(props) => props.width};
 `;
 
-const useSemiPersistenState = (key, initialState) => {
+type Story = {
+  objectID: string;
+  url: string;
+  title: string;
+  author: string;
+  num_comments: string;
+  points: number;
+};
+
+type Stories = Array<Story>;
+
+type ListProps = {
+  list: Stories;
+  onRemoveItem: (item: Story) => void;
+};
+
+type ItemProps = {
+  item: Story;
+  onRemoveItem: (item: Story) => void;
+};
+
+type StoriesState = {
+  data: Stories;
+  isLoading: boolean;
+  isError: boolean;
+};
+
+interface StoriesFetchInitAction {
+  type: "STORIES_FETCH_INIT";
+}
+
+interface StoriesFetchSuccessAction {
+  type: "STORIES_FETCH_SUCCESS";
+  payload: Stories;
+}
+
+interface StoriesFetchFailureAction {
+  type: "STORIES_FETCH_FAILURE";
+}
+
+interface StoriesRemoveAction {
+  type: "REMOVE_STORY";
+  payload: Story;
+}
+
+type StoriesAction =
+  | StoriesFetchInitAction
+  | StoriesFetchSuccessAction
+  | StoriesFetchFailureAction
+  | StoriesRemoveAction;
+
+type SearchFormProps = {
+  searchTerm: string;
+  onSearchInput: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearchSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+};
+
+type InputWithLabelProps = {
+  id: string;
+  value: string;
+  type?: string;
+  onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isFocused?: boolean;
+  children: React.ReactNode;
+};
+
+const useSemiPersistenState = (
+  key: string,
+  initialState: string
+): [string, (newValue: string) => void] => {
   const isMounted = useRef(false);
 
   const [value, setValue] = useState(localStorage.getItem(key) || initialState);
@@ -102,7 +171,7 @@ const useSemiPersistenState = (key, initialState) => {
   return [value, setValue];
 };
 
-const storiesReducer = (state, action) => {
+const storiesReducer = (state: StoriesState, action: StoriesAction) => {
   switch (action.type) {
     case "STORIES_FETCH_INIT":
       return {
@@ -150,8 +219,8 @@ const InputWithLabel = ({
   onInputChange,
   isFocused,
   children
-}) => {
-  const inputRef = useRef();
+}: InputWithLabelProps) => {
+  const inputRef = useRef<HTMLInputElement>(null!);
 
   useEffect(() => {
     if (isFocused && inputRef.current) {
@@ -175,18 +244,7 @@ const InputWithLabel = ({
   );
 };
 
-const List = memo(
-  ({ list, onRemoveItem }) =>
-    console.log("B:List") || (
-      <ul>
-        {list.map((item) => (
-          <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
-        ))}
-      </ul>
-    )
-);
-
-const Item = ({ item, onRemoveItem }) => {
+const Item = ({ item, onRemoveItem }: ItemProps) => {
   const { url, title, author, num_comments, points } = item;
 
   return (
@@ -206,7 +264,19 @@ const Item = ({ item, onRemoveItem }) => {
   );
 };
 
-const SearchForm = ({ searchTerm, onSearchInput, onSearchSubmit }) => (
+const List = memo(({ list, onRemoveItem }: ListProps) => (
+  <ul>
+    {list.map((item) => (
+      <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+    ))}
+  </ul>
+));
+
+const SearchForm = ({
+  searchTerm,
+  onSearchInput,
+  onSearchSubmit
+}: SearchFormProps) => (
   <StyledSearchForm onSubmit={onSearchSubmit}>
     <InputWithLabel
       id="search"
@@ -232,11 +302,11 @@ const App = () => {
     isError: false
   });
 
-  const handleSearchInput = (event) => {
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleSearchSubmit = (event) => {
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
 
     event.preventDefault();
@@ -261,7 +331,7 @@ const App = () => {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = useCallback((item) => {
+  const handleRemoveStory = useCallback((item: Story) => {
     dispatchStories({
       type: "REMOVE_STORY",
       payload: item
